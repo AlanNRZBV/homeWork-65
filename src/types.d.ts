@@ -1,11 +1,30 @@
 export interface IPageLoader {
   content: IPageContent
-  isHome?: boolean
+  isHome: boolean
 }
 
 export interface IPageContent{
-  id?:string
   title: string,
   content: string
 }
+
+export interface IPagesItem {
+  id: string,
+  title: string,
+  content: string
+}
+
+export interface IPagesList {
+  [id:string]: IPageContent
+}
+
+
+export  interface IContentTool {
+  pages: IPagesItem[]
+}
+export interface IOptions{
+  value: string,
+  label: string
+}
+
 
