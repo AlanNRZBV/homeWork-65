@@ -1,5 +1,6 @@
 export interface IPageLoader {
   content: IPageContent
+  isHome?: boolean
 }
 
 export interface IPageContent{
