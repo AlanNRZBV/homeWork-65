@@ -1,3 +1,4 @@
+
 export interface IPageLoader {
   content: IPageContent
   isHome: boolean
@@ -21,6 +22,8 @@ export interface IPagesList {
 
 export  interface IContentTool {
   pages: IPagesItem[]
+  onSelect: (selected: IOptions | null)=>void
+  selectedValue: string
 }
 export interface IOptions{
   value: string,
