@@ -5,6 +5,7 @@ import ContentTool from '../../components/ContentTool/ContentTool.tsx';
 import React, { useCallback, useEffect, useState } from 'react';
 import { IOptions, IPageContent, IPagesItem, IPagesList } from '../../types';
 import axiosApi from '../../axiosApi.ts';
+import CustomNavLink from "../../components/CustomNavLink/CustomNavLink.tsx";
 
 const App = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const App = () => {
   });
   const [pages, setPages] = useState<IPagesItem[]>([]);
   const [selected, setSelected] = useState<string>('');
-  const [isHome, setIsHome] = useState(false);
+  const [isHome, setIsHome] = useState(true);
 
   const fetchData = useCallback(async () => {
     if (location.pathname !== '/' && location.pathname !== '/pages/admin') {
@@ -26,33 +27,40 @@ const App = () => {
       } catch (error) {
         console.log('Caught while fetching data: ' + error);
       }
-    } else if (location.pathname === '/pages/admin') {
-
-      if(!selected){
-        setPage(prevState => ({...prevState,
-          content:'',
-          title:''}))
-      }
-
-      try {
-        const pagesResponse = await axiosApi.get<IPagesList | null>('pages/.json');
-        const pages = pagesResponse.data;
-        if (!pages) {
-          return;
-        }
-        const newPages = Object.keys(pages).map((id) => {
-          const page = pages[id];
-          return {
-            ...page,
-            id,
-          };
-        });
-        setPages(newPages);
-      } catch (error) {
-        console.log('Caught while fetching data for admin page: ' + error);
-      }
     }
   }, [location.pathname, selected]);
+
+  useEffect(() => {
+    const initialFetch = async ()=>{
+
+    if(!selected){
+      setPage(prevState => ({...prevState,
+        content:'',
+        title:''}))
+    }
+
+    try {
+      const pagesResponse = await axiosApi.get<IPagesList | null>('pages/.json');
+      const pages = pagesResponse.data;
+      if (!pages) {
+        return;
+      }
+      const newPages = Object.keys(pages).map((id) => {
+        const page = pages[id];
+        return {
+          ...page,
+          id,
+        };
+      });
+      setPages(newPages);
+    } catch (error) {
+      console.log('Caught while fetching data for admin page: ' + error);
+    }
+    }
+    void initialFetch()
+
+  }, [selected]);
+
 
   useEffect(() => {
     if (location.pathname === '/' && !isHome) {
@@ -100,8 +108,6 @@ const App = () => {
     }));
   };
 
-
-
   return (
     <>
       <header>
@@ -114,21 +120,9 @@ const App = () => {
                 <NavLink className="nav-link" to="/">
                   Home
                 </NavLink>
-                <NavLink className="nav-link" to="/pages/about">
-                  About
-                </NavLink>
-                <NavLink className="nav-link" to="/pages/contacts">
-                  Contacts
-                </NavLink>
-                <NavLink className="nav-link" to="/pages/pricing">
-                  Pricing
-                </NavLink>
-                <NavLink className="nav-link" to="/pages/products">
-                  Products
-                </NavLink>
-                <NavLink className="nav-link" to="/pages/shop">
-                  Shop
-                </NavLink>
+                {pages.map((item, index)=>(
+                  <CustomNavLink link={item.id} key={index}/>
+                ))}
                 <NavLink className="nav-link" to="/pages/admin">
                   Admin
                 </NavLink>
