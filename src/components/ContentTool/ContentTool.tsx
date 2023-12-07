@@ -1,50 +1,18 @@
 import React, { FC, useEffect, useState } from 'react';
 import { Button, Form, FormGroup } from 'react-bootstrap';
 import Select from 'react-select';
-import { IContentTool, IOptions, IPageContent } from '../../types';
-import axiosApi from '../../axiosApi.ts';
-import { useNavigate } from 'react-router-dom';
+import { IContentTool, IOptions } from '../../types';
 
-const ContentTool: FC<IContentTool> = ({ pages, onSelect, selectedValue }) => {
-  const navigate = useNavigate();
+const ContentTool: FC<IContentTool> = ({ pages, onSelect, onSubmit, pageData, onChange }) => {
   const [options, setOptions] = useState<IOptions[]>([]);
-  const [currentData, setCurrentData] = useState<IPageContent>({
-    content: '',
-    title: '',
-  });
 
   useEffect(() => {
     setOptions(pages.map((page) => ({ value: page.id, label: page.title })));
   }, [pages]);
 
-  const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
+  const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    try {
-      await axiosApi.put(`pages/${selectedValue}.json`, currentData);
-      setCurrentData((prevState) => ({ ...prevState, content: '', title: '' }));
-      navigate(`/pages/${selectedValue}`)
-    } catch (error) {
-      console.log('Caught while form submit: ' + error);
-    }
-  };
-
-  useEffect(() => {
-    pages.map((item) => {
-      if (item.id === selectedValue) {
-        setCurrentData((prevState) => ({
-          ...prevState,
-          content: item.content,
-          title: item.title,
-        }));
-      }
-    });
-  }, [pages, selectedValue]);
-
-  const currentDataChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCurrentData((prevState) => ({
-      ...prevState,
-      [e.target.name]: [e.target.value],
-    }));
+    onSubmit();
   };
 
   return (
@@ -57,12 +25,12 @@ const ContentTool: FC<IContentTool> = ({ pages, onSelect, selectedValue }) => {
             Title
           </Form.Label>
           <Form.Control
-            onChange={currentDataChanged}
+            onChange={onChange}
             className="w-50 me-auto"
             type="text"
             name="title"
             id="title"
-            value={currentData.title}
+            value={pageData.title}
             required
           />
           <Button className="me-auto" type="submit" variant="primary">
@@ -72,12 +40,12 @@ const ContentTool: FC<IContentTool> = ({ pages, onSelect, selectedValue }) => {
         <FormGroup>
           <Form.Label htmlFor="text">Content</Form.Label>
           <Form.Control
-            onChange={currentDataChanged}
+            onChange={onChange}
             as="textarea"
             name="content"
             id="content"
             rows={8}
-            value={currentData.content}
+            value={pageData.content}
             required
           />
         </FormGroup>

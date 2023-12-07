@@ -1,3 +1,4 @@
+import React from "react";
 
 export interface IPageLoader {
   content: IPageContent
@@ -23,7 +24,10 @@ export interface IPagesList {
 export  interface IContentTool {
   pages: IPagesItem[]
   onSelect: (selected: IOptions | null)=>void
-  selectedValue: string
+  // selectedValue: string
+  onSubmit: ()=>void,
+  onChange: (e: React.ChangeEvent<HTMLInputElement>)=>void
+  pageData: IPageContent
 }
 export interface IOptions{
   value: string,
