@@ -37,4 +37,9 @@ export interface ICustomNavLink {
   link: string
 }
 
+export interface IToggle {
+  nav: boolean,
+  pageItem: boolean
+}
+
 

@@ -3,7 +3,7 @@ import { Container, Nav, Navbar, Spinner } from 'react-bootstrap';
 import PageLoader from '../../components/PageLoader/PageLoader.tsx';
 import ContentTool from '../../components/ContentTool/ContentTool.tsx';
 import React, { useCallback, useEffect, useState } from 'react';
-import { IOptions, IPageContent, IPagesItem, IPagesList } from '../../types';
+import { IOptions, IPageContent, IPagesItem, IPagesList, IToggle } from '../../types';
 import axiosApi from '../../axiosApi.ts';
 import CustomNavLink from '../../components/CustomNavLink/CustomNavLink.tsx';
 
@@ -17,9 +17,13 @@ const App = () => {
   const [pages, setPages] = useState<IPagesItem[]>([]);
   const [selected, setSelected] = useState<string>('');
   const [isHome, setIsHome] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-
+  const [isLoading, setIsLoading] = useState<IToggle>({
+    nav: false,
+    pageItem: false,
+  });
   const fetchData = useCallback(async () => {
+    setIsLoading((prevState) => ({ ...prevState, pageItem: true }));
+
     if (location.pathname !== '/' && location.pathname !== '/pages/admin') {
       try {
         await axiosApi.get(location.pathname + '.json').then((response) => {
@@ -27,14 +31,16 @@ const App = () => {
         });
       } catch (error) {
         console.log('Caught while fetching data: ' + error);
+        setIsLoading((prevState) => ({ ...prevState, pageItem: false }));
+      } finally {
+        setIsLoading((prevState) => ({ ...prevState, pageItem: false }));
       }
     }
   }, [location.pathname]);
 
   useEffect(() => {
+    setIsLoading((prevState) => ({ ...prevState, nav: true }));
     const initialFetch = async () => {
-      setIsLoading((prevState) => !prevState);
-
       try {
         const pagesResponse = await axiosApi.get<IPagesList | null>('pages/.json');
         const pages = pagesResponse.data;
@@ -49,10 +55,11 @@ const App = () => {
           };
         });
         setPages(newPages);
-        setIsLoading((prevState) => !prevState);
       } catch (error) {
-        setIsLoading((prevState) => !prevState);
+        setIsLoading((prevState) => ({ ...prevState, nav: false }));
         console.log('Caught while fetching data for admin page: ' + error);
+      } finally {
+        setIsLoading((prevState) => ({ ...prevState, nav: false }));
       }
     };
     void initialFetch();
@@ -103,9 +110,9 @@ const App = () => {
     }));
   };
 
-  const resetData = (useCallback(()=>{
-    setPage(prevState => ({...prevState, title:'', content:''}))
-  },[]))
+  const resetData = useCallback(() => {
+    setPage((prevState) => ({ ...prevState, title: '', content: '' }));
+  }, []);
 
   return (
     <>
@@ -117,9 +124,9 @@ const App = () => {
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="ms-auto">
                 <NavLink className="nav-link" to="/">
-                  Home
+                  HOME
                 </NavLink>
-                {isLoading ? (
+                {isLoading.nav ? (
                   <Spinner animation="border" variant="primary" />
                 ) : (
                   pages.map((item, index) => <CustomNavLink link={item.id} key={index} />)
@@ -136,7 +143,20 @@ const App = () => {
         <Container>
           <Routes>
             <Route path="/" element={<PageLoader content={page} isHome={isHome} />} />
-            <Route path="/pages/:pageName" element={<PageLoader content={page} isHome={isHome} />} />
+            <Route
+              path="/pages/:pageName"
+              element={
+                <>
+                  {isLoading.pageItem ? (
+                    <div className="d-flex justify-content-center align-items-center py-5">
+                      <Spinner animation="border" variant="primary" />
+                    </div>
+                  ) : (
+                    <PageLoader content={page} isHome={isHome} />
+                  )}
+                </>
+              }
+            />
             <Route
               path="/pages/admin"
               element={
