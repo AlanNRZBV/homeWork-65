@@ -1,11 +1,11 @@
 import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import { Container, Nav, Navbar } from 'react-bootstrap';
+import { Container, Nav, Navbar, Spinner } from 'react-bootstrap';
 import PageLoader from '../../components/PageLoader/PageLoader.tsx';
 import ContentTool from '../../components/ContentTool/ContentTool.tsx';
 import React, { useCallback, useEffect, useState } from 'react';
 import { IOptions, IPageContent, IPagesItem, IPagesList } from '../../types';
 import axiosApi from '../../axiosApi.ts';
-import CustomNavLink from "../../components/CustomNavLink/CustomNavLink.tsx";
+import CustomNavLink from '../../components/CustomNavLink/CustomNavLink.tsx';
 
 const App = () => {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ const App = () => {
   const [pages, setPages] = useState<IPagesItem[]>([]);
   const [selected, setSelected] = useState<string>('');
   const [isHome, setIsHome] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (location.pathname !== '/' && location.pathname !== '/pages/admin') {
@@ -28,39 +29,34 @@ const App = () => {
         console.log('Caught while fetching data: ' + error);
       }
     }
-  }, [location.pathname, selected]);
+  }, [location.pathname]);
 
   useEffect(() => {
-    const initialFetch = async ()=>{
+    const initialFetch = async () => {
+      setIsLoading((prevState) => !prevState);
 
-    if(!selected){
-      setPage(prevState => ({...prevState,
-        content:'',
-        title:''}))
-    }
-
-    try {
-      const pagesResponse = await axiosApi.get<IPagesList | null>('pages/.json');
-      const pages = pagesResponse.data;
-      if (!pages) {
-        return;
+      try {
+        const pagesResponse = await axiosApi.get<IPagesList | null>('pages/.json');
+        const pages = pagesResponse.data;
+        if (!pages) {
+          return;
+        }
+        const newPages = Object.keys(pages).map((id) => {
+          const page = pages[id];
+          return {
+            ...page,
+            id,
+          };
+        });
+        setPages(newPages);
+        setIsLoading((prevState) => !prevState);
+      } catch (error) {
+        setIsLoading((prevState) => !prevState);
+        console.log('Caught while fetching data for admin page: ' + error);
       }
-      const newPages = Object.keys(pages).map((id) => {
-        const page = pages[id];
-        return {
-          ...page,
-          id,
-        };
-      });
-      setPages(newPages);
-    } catch (error) {
-      console.log('Caught while fetching data for admin page: ' + error);
-    }
-    }
-    void initialFetch()
-
+    };
+    void initialFetch();
   }, [selected]);
-
 
   useEffect(() => {
     if (location.pathname === '/' && !isHome) {
@@ -71,7 +67,6 @@ const App = () => {
       void fetchData();
     }
   }, [fetchData, isHome, location.pathname]);
-
 
   useEffect(() => {
     pages.map((item) => {
@@ -108,6 +103,10 @@ const App = () => {
     }));
   };
 
+  const resetData = (useCallback(()=>{
+    setPage(prevState => ({...prevState, title:'', content:''}))
+  },[]))
+
   return (
     <>
       <header>
@@ -120,9 +119,11 @@ const App = () => {
                 <NavLink className="nav-link" to="/">
                   Home
                 </NavLink>
-                {pages.map((item, index)=>(
-                  <CustomNavLink link={item.id} key={index}/>
-                ))}
+                {isLoading ? (
+                  <Spinner animation="border" variant="primary" />
+                ) : (
+                  pages.map((item, index) => <CustomNavLink link={item.id} key={index} />)
+                )}
                 <NavLink className="nav-link" to="/pages/admin">
                   Admin
                 </NavLink>
@@ -145,6 +146,7 @@ const App = () => {
                   onChange={currentDataChanged}
                   onSubmit={onSubmit}
                   pageData={page}
+                  reset={resetData}
                 />
               }
             />

@@ -5,7 +5,7 @@ const PageLoader: FC<IPageLoader> = ({content,isHome}) => {
   return (
     <>
       {isHome ? (
-        <span>Home page content loaded</span>
+        <h2>Home page content loaded</h2>
       ):(
     <div className="border border-1 rounded-3 shadow-sm">
       <span className="text text-black">{content.title}</span>

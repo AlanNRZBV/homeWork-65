@@ -1,9 +1,9 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from "react";
 import { Button, Form, FormGroup } from 'react-bootstrap';
 import Select from 'react-select';
 import { IContentTool, IOptions } from '../../types';
 
-const ContentTool: FC<IContentTool> = ({ pages, onSelect, onSubmit, pageData, onChange }) => {
+const ContentTool: FC<IContentTool> = ({ pages, onSelect, onSubmit, pageData, onChange ,reset}) => {
   const [options, setOptions] = useState<IOptions[]>([]);
 
   useEffect(() => {
@@ -14,6 +14,12 @@ const ContentTool: FC<IContentTool> = ({ pages, onSelect, onSubmit, pageData, on
     e.preventDefault();
     onSubmit();
   };
+  useEffect(() => {
+
+    reset()
+  }, []);
+
+
 
   return (
     <section className="border border-1 rounded rounded-3 shadow-sm py-3 px-3">

@@ -26,6 +26,7 @@ export  interface IContentTool {
   onSubmit: ()=>void,
   onChange: (e: React.ChangeEvent<HTMLInputElement>)=>void
   pageData: IPageContent
+  reset: ()=>void
 }
 export interface IOptions{
   value: string,
